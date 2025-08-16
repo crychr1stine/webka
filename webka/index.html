@@ -244,6 +244,34 @@
             line-height: 1.4;
         }
 
+        .game-controls {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .finish-btn {
+            background: linear-gradient(135deg, var(--accent-gold), #ff8500);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            min-width: 250px;
+        }
+
+        .finish-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .finish-btn:active {
+            transform: translateY(0);
+        }
+
         .power-ups {
             display: flex;
             justify-content: space-around;
@@ -299,6 +327,12 @@
             </div>
         </div>
 
+        <div class="game-controls">
+            <button class="finish-btn" id="finish-btn" style="display: none;">
+                🏁 Закончить игру и забрать золото
+            </button>
+        </div>
+
         <div class="power-ups">
             <div class="power-up" id="shuffle-power" title="Перемешать поле (200 очков)">🔄</div>
             <div class="power-up" id="bomb-power" title="Взрыв (150 очков)">💥</div>
@@ -331,6 +365,7 @@
             const comboDisplay = document.getElementById('combo');
             const movesDisplay = document.getElementById('moves');
             const goldDisplay = document.getElementById('gold');
+            const finishBtn = document.getElementById('finish-btn');
             
             const width = 8;
             const items = ['🐟', '🧶', '🐭', '🍖', '🥛', '🌿', '💎', '🎁'];
@@ -459,12 +494,7 @@
                         setTimeout(checkGameEnd, 1000);
                     }
                     
-                    // Показываем кнопку после первых очков
-                    if (tg && score > 0) {
-                        const gold = Math.floor(score / 10);
-                        tg.MainButton.setText(`💰 Забрать ${gold} золота`);
-                        tg.MainButton.show();
-                    }
+                    // Кнопка появится только при окончании игры или по желанию игрока
                 }
                 
                 isProcessing = false;
@@ -657,9 +687,15 @@
                 const gold = Math.floor(score / 10); // 1 золото за 10 очков
                 goldDisplay.textContent = gold;
                 
-                // Обновляем текст кнопки
-                if (tg && gold > 0) {
-                    tg.MainButton.setText(`💰 Забрать ${gold} золота`);
+                // Показываем кнопку если есть очки
+                if (score > 0) {
+                    finishBtn.style.display = 'block';
+                    finishBtn.textContent = `🏁 Закончить игру и забрать ${gold} золота`;
+                    
+                    // Обновляем Telegram кнопку но не показываем её
+                    if (tg) {
+                        tg.MainButton.setText(`💰 Забрать ${gold} золота`);
+                    }
                 }
             }
 
@@ -676,6 +712,10 @@
                     if (tg) {
                         tg.MainButton.setText(`💰 Забрать ${gold} золота!`);
                         tg.MainButton.show();
+                    } else {
+                        // В браузере показываем большую кнопку
+                        finishBtn.textContent = `🎉 ИГРА ОКОНЧЕНА! Забрать ${gold} золота`;
+                        finishBtn.style.background = 'linear-gradient(135deg, #ff006e, #8338ec)';
                     }
                     
                     setTimeout(() => finalText.remove(), 3000);
@@ -763,6 +803,9 @@
                     playSound('rainbow');
                 }
             });
+
+            // Обработчик кнопки завершения
+            finishBtn.addEventListener('click', finishGame);
 
             // Инициализация игры
             createBoard();
